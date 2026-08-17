@@ -1,116 +1,185 @@
--- Blox Fruits Orinlo X GUI v4 (Full Working)
+-- made by tost
+-- Murder Mystery 2 Hack GUI (Orinlo/Palo)
+
 local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local rootPart = character:WaitForChild("HumanoidRootPart")
-local virtualInput = game:GetService("VirtualInputManager")
-local userInput = game:GetService("UserInputService")
-local runService = game:GetService("RunService")
-local tweenService = game:GetService("TweenService")
+local mouse = player:GetMouse()
+local workspace = game:GetService("Workspace")
+local runservice = game:GetService("RunService")
+local tp_speed = 200
 
--- Services
-local lp = player
-local rs = game:GetService("ReplicatedStorage")
-local ws = game:GetService("Workspace")
+-- GUI
+local screen = Instance.new("ScreenGui", player.PlayerGui)
+local frame = Instance.new("Frame", screen)
+frame.Size = UDim2.new(0, 400, 0, 500)
+frame.Position = UDim2.new(0.5, -200, 0.5, -250)
+frame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+frame.BackgroundTransparency = 0.2
+frame.Active = true
+frame.Draggable = true
 
--- GUI (Modern Dark Theme)
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = player.PlayerGui
-screenGui.ResetOnSpawn = false
-
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 520, 0, 650)
-mainFrame.Position = UDim2.new(0.5, -260, 0.5, -325)
-mainFrame.BackgroundColor3 = Color3.new(0.08, 0.08, 0.12)
-mainFrame.BackgroundTransparency = 0.1
-mainFrame.BorderSizePixel = 0
-mainFrame.ClipsDescendants = true
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = screenGui
-
--- Shadow
-local shadow = Instance.new("UICorner")
-shadow.CornerRadius = UDim.new(0, 12)
-shadow.Parent = mainFrame
-
-local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 40)
-titleBar.BackgroundColor3 = Color3.new(0.15, 0.15, 0.2)
-titleBar.BackgroundTransparency = 0.2
-titleBar.Parent = mainFrame
-
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -50, 1, 0)
-title.Position = UDim2.new(0, 10, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "ORINLO X - BLOX FRUITS"
+-- Başlık
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.new(0.2, 0, 0)
+title.Text = "MM2 CHEAT | orinlo"
 title.TextColor3 = Color3.new(1, 1, 1)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 20
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = titleBar
+title.TextScaled = true
 
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -35, 0, 5)
-closeBtn.BackgroundColor3 = Color3.new(0.6, 0.1, 0.1)
-closeBtn.Text = "✕"
-closeBtn.TextColor3 = Color3.new(1, 1, 1)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 18
-closeBtn.Parent = titleBar
-closeBtn.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
-end)
-
--- Tab System
-local tabFrame = Instance.new("Frame")
-tabFrame.Size = UDim2.new(1, 0, 0, 35)
-tabFrame.Position = UDim2.new(0, 0, 0, 40)
-tabFrame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.15)
-tabFrame.BackgroundTransparency = 0.3
-tabFrame.Parent = mainFrame
-
-local tabs = {}
-local currentTab = nil
-
-local function createTab(text, icon)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 100, 1, 0)
-    btn.BackgroundTransparency = 0.8
-    btn.Text = icon .. " " .. text
-    btn.TextColor3 = Color3.new(0.7, 0.7, 0.7)
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 14
-    btn.Parent = tabFrame
-    return btn
+local function make_button(text, y, callback)
+	local btn = Instance.new("TextButton", frame)
+	btn.Size = UDim2.new(0.9, 0, 0, 30)
+	btn.Position = UDim2.new(0.05, 0, 0, y)
+	btn.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+	btn.Text = text
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.MouseButton1Click:Connect(callback)
+	return btn
 end
 
-local tab1 = createTab("Combat", "⚔️")
-tab1.Position = UDim2.new(0, 5, 0, 0)
-local tab2 = createTab("Movement", "🚀")
-tab2.Position = UDim2.new(0, 110, 0, 0)
-local tab3 = createTab("ESP/Teleport", "👁️")
-tab3.Position = UDim2.new(0, 215, 0, 0)
-local tab4 = createTab("Misc", "⚙️")
-tab4.Position = UDim2.new(0, 320, 0, 0)
+-- ESP
+local esp_players = {}
+local function esp_update()
+	for _, v in pairs(game.Players:GetPlayers()) do
+		if v ~= player and v.Character and v.Character:FindFirstChild("Head") then
+			local char = v.Character
+			local role = "Masum"
+			local color = Color3.new(0, 1, 0) -- yeşil
+			if v:FindFirstChild("Data") and v.Data:FindFirstChild("Role") then
+				local r = v.Data.Role.Value
+				if r == "Murderer" then
+					role = "Katil"
+					color = Color3.new(1, 0, 0) -- kırmızı
+				elseif r == "Sheriff" then
+					role = "Sherif"
+					color = Color3.new(0, 0, 1) -- mavi
+				end
+			end
+			-- billboard
+			local bill = Instance.new("BillboardGui", char.Head)
+			bill.Size = UDim2.new(0, 100, 0, 30)
+			bill.Adornee = char.Head
+			local label = Instance.new("TextLabel", bill)
+			label.Size = UDim2.new(1, 0, 1, 0)
+			label.BackgroundTransparency = 1
+			label.Text = v.Name .. " [" .. role .. "]"
+			label.TextColor3 = color
+			label.TextScaled = true
+			table.insert(esp_players, bill)
+		end
+	end
+end
 
--- Content container
-local contentFrame = Instance.new("Frame")
-contentFrame.Size = UDim2.new(1, -10, 1, -85)
-contentFrame.Position = UDim2.new(0, 5, 0, 80)
-contentFrame.BackgroundTransparency = 1
-contentFrame.Parent = mainFrame
+make_button("ESP AÇ", 40, function()
+	for _, b in pairs(esp_players) do b:Destroy() end
+	esp_players = {}
+	esp_update()
+	runservice.RenderStepped:Connect(function()
+		for _, b in pairs(esp_players) do b:Destroy() end
+		esp_players = {}
+		esp_update()
+	end)
+end)
 
-local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, 0, 1, 0)
-scroll.BackgroundTransparency = 1
-scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-scroll.ScrollBarThickness = 4
-scroll.ScrollBarImageColor3 = Color3.new(0.3, 0.3, 0.5)
-scroll.Parent = contentFrame
+-- Silaha ışınlanma
+make_button("Silaha Işınlan", 80, function()
+	for _, v in pairs(workspace:GetDescendants()) do
+		if v:IsA("Tool") and v:FindFirstChild("Handle") then
+			player.Character.HumanoidRootPart.CFrame = v.Handle.CFrame + Vector3.new(0, 2, 0)
+			break
+		end
+	end
+end)
 
+-- Coin Farm (düşen coinleri topla)
+make_button("Coin Farm (Açık)", 120, function()
+	runservice.RenderStepped:Connect(function()
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v:IsA("Part") and v.Name == "Coin" then
+				player.Character.HumanoidRootPart.CFrame = v.CFrame + Vector3.new(0, 2, 0)
+			end
+		end
+	end)
+end)
+
+-- Walkspeed / Jump
+make_button("Speed + Jump (x2)", 160, function()
+	local char = player.Character
+	if char then
+		char.Humanoid.WalkSpeed = 50
+		char.Humanoid.JumpPower = 100
+	end
+end)
+
+-- /Murder/ - Herkesi öldür (katil ise)
+make_button("HERKESİ ÖLDÜR (Katil)", 200, function()
+	local char = player.Character
+	if not char then return end
+	for _, v in pairs(game.Players:GetPlayers()) do
+		if v ~= player and v.Character and v.Character:FindFirstChild("Head") then
+			local head = v.Character.Head
+			local knife = char:FindFirstChildOfClass("Tool")
+			if knife then
+				knife:Activate()
+				knife.Handle.CFrame = head.CFrame
+				wait(0.1)
+				knife:Deactivate()
+			end
+		end
+	end
+end)
+
+-- Sherife TP olma
+make_button("Sherif'e TP", 240, function()
+	for _, v in pairs(game.Players:GetPlayers()) do
+		if v ~= player and v.Data and v.Data.Role.Value == "Sheriff" and v.Character then
+			player.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+			break
+		end
+	end
+end)
+
+-- /sherif/ - Katile sık (sherif ise)
+make_button("KATİLE SIK (Sherif)", 280, function()
+	local char = player.Character
+	if not char then return end
+	local gun = char:FindFirstChildOfClass("Tool")
+	if not gun then return end
+	for _, v in pairs(game.Players:GetPlayers()) do
+		if v ~= player and v.Data and v.Data.Role.Value == "Murderer" and v.Character then
+			local head = v.Character.Head
+			gun:Activate()
+			gun.Handle.CFrame = head.CFrame
+			wait(0.1)
+			gun:Deactivate()
+			break
+		end
+	end
+end)
+
+-- Aimbot (sherif ise hedefe otomatik nişan)
+make_button("Aimbot AÇ (Sherif)", 320, function()
+	runservice.RenderStepped:Connect(function()
+		local char = player.Character
+		if not char then return end
+		local gun = char:FindFirstChildOfClass("Tool")
+		if not gun then return end
+		for _, v in pairs(game.Players:GetPlayers()) do
+			if v ~= player and v.Data and v.Data.Role.Value == "Murderer" and v.Character then
+				local head = v.Character.Head
+				char.HumanoidRootPart.CFrame = CFrame.lookAt(char.HumanoidRootPart.Position, head.Position)
+				break
+			end
+		end
+	end)
+end)
+
+-- Kapat butonu
+make_button("KAPAT", 460, function()
+	screen:Destroy()
+end)
+
+-- GUI göster
+frame.Visible = true
 local function createCategory(parent, titleText, yPos)
     local cat = Instance.new("Frame")
     cat.Size = UDim2.new(1, 0, 0, 30)
